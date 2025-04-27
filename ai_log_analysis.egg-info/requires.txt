@@ -1,0 +1,11 @@
+elasticsearch
+qdrant-client
+sentence-transformers
+langchain-core
+langchain-anthropic
+anthropic
+fastapi
+uvicorn
+langfuse
+langchain
+nest_asyncio

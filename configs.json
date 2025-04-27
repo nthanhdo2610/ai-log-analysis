@@ -1,0 +1,25 @@
+{
+    "es_config": {
+        "es_host": "https://127.0.0.1:9200",
+        "es_user": "elastic",
+        "es_pass": "changeme",
+        "index": "logs-local"
+    },
+    "qdrant_db": {
+        "host": "127.0.0.1",
+        "port": 6333,
+        "collection_name": "logs_embed",
+        "prefer_grpc": true,
+        "https": false
+    },
+    "embedding_model": "http://127.0.0.1:8080/embed/",
+    "langfuse_keys": {
+        "secret_key": "your-local-secret",
+        "public_key": "your-local-public",
+        "host": "http://localhost:3000"
+    },
+    "claude_config": {
+        "claude_model": "claude-3-opus",
+        "claude_api_key": "sk-ant-test"
+    }
+}

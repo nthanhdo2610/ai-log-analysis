@@ -1,0 +1,18 @@
+Metadata-Version: 2.4
+Name: ai_log_analysis
+Version: 0.1.0
+Summary: AI Log Analysis Tool
+Author-email: Domenic Nguyen <thanhdomenic.nguyen@gmail.com>
+License-File: LICENSE
+Requires-Dist: elasticsearch
+Requires-Dist: qdrant-client
+Requires-Dist: sentence-transformers
+Requires-Dist: langchain-core
+Requires-Dist: langchain-anthropic
+Requires-Dist: anthropic
+Requires-Dist: fastapi
+Requires-Dist: uvicorn
+Requires-Dist: langfuse
+Requires-Dist: langchain
+Requires-Dist: nest_asyncio
+Dynamic: license-file

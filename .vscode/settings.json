@@ -1,0 +1,26 @@
+{
+    "python.analysis.extraPaths": [
+        "./chatbot",
+        "./embed"
+    ],
+    "python.defaultInterpreterPath": "mlenv/bin/python",
+    "python.linting.enabled": true,
+    "python.linting.pylintEnabled": true,
+    "python.linting.mypyEnabled": false,
+    "python.linting.flake8Enabled": false,
+    "python.formatting.provider": "black",
+    "editor.formatOnSave": true,
+    "python.testing.unittestEnabled": true,
+    "python.testing.pytestEnabled": false,
+    "python.testing.nosetestsEnabled": false,
+    "python.testing.unittestArgs": [
+        "-v",
+        "-s",
+        "./chatbot",
+        "-p",
+        "*_test.py"
+    ],
+    "terminal.integrated.env.osx": {
+        "PYTHONPATH": "${workspaceFolder}"
+    }
+}
