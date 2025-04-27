@@ -148,8 +148,8 @@ Example `configs.json`:
 
 | Task | Command |
 |:-----|:--------|
-| Start Langfuse + Qdrant services | `docker-compose up -d` |
-| Stop all running services | `docker-compose down` |
+| Start Langfuse + Qdrant services | `docker compose up -d` |
+| Stop all running services | `docker compose down` |
 | Build Python project | `python -m build` |
 | Install project locally | `pip install -e .` |
 | Run Embedding server | `python embed/embeddedapi.py` |
