@@ -22,4 +22,4 @@ dependencies = [
 ]
 
 [tool.setuptools]
-packages = ["chatbot", "embed"]
+packages = ["chatbot", "embed", "utils"]

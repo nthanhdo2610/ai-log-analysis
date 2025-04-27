@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.concurrency import asynccontextmanager
 from pydantic import BaseModel
 from chatbot import ELKChatbot
-from config_manager import ConfigManager
+from utils.config_manager import ConfigManager
 
 # Initialize FastAPI app
 app = FastAPI(title="ELK Log Analysis Chatbot API", version="1.0")

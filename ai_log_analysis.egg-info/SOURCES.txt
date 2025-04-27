@@ -10,10 +10,11 @@ chatbot/__init__.py
 chatbot/anthropic.py
 chatbot/chat_api.py
 chatbot/chatbot.py
-chatbot/config_manager.py
 chatbot/configuration.py
 chatbot/embeddings.py
 chatbot/langfuse.py
 chatbot/qdrant.py
 embed/__init__.py
 embed/embedded_api.py
+utils/__init__.py
+utils/config_manager.py

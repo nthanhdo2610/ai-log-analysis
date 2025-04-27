@@ -1,7 +1,8 @@
 {
     "python.analysis.extraPaths": [
         "./chatbot",
-        "./embed"
+        "./embed",
+        "./utils"
     ],
     "python.defaultInterpreterPath": "mlenv/bin/python",
     "python.linting.enabled": true,
