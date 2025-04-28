@@ -1,31 +1,31 @@
 # AI Log Analysis Project
 
-🚀 An AI-powered FastAPI backend that enables log inspection, vector storage, and AI conversational analysis – fully running on your local machine with Docker!
+🚀 An AI-powered FastAPI backend that enables log inspection, vector storage, and AI conversational analysis — running locally with Docker (for Qdrant) and using **Langfuse Cloud** for observability!
 
 This project integrates:
 - **Elasticsearch** for searching logs
-- **Qdrant** for vector storage
-- **Langfuse** for AI observability and prompt tracking
-- **Sentence Transformers** for embedding text
+- **Qdrant** for local vector storage
+- **Langfuse Cloud** for AI observability and prompt tracking
+- **Sentence Transformers** for text embedding
 - **FastAPI** for serving APIs
 
-✅ No external SaaS dependencies — everything runs locally!
+✅ Only Qdrant runs locally — Langfuse Cloud is used for observability!
 
 ---
 
-## 📦 Project Structure
+## 📆 Project Structure
 
 ```bash
 ai-log-analysis/
  ├── chatbot/         # Chatbot server using FastAPI
  ├── embed/           # Embedding API server (optional)
  ├── utils/           # Config manager and utilities
- ├── dist/            # Build artifacts (after build)
- ├── docker-compose.yml  # Docker Compose to start Langfuse + Qdrant
- ├── configs.json    # Configuration settings
+ ├── dist/            # Build artifacts
+ ├── docker-compose.yml  # Docker Compose to start Qdrant
+ ├── configs.json     # Configuration settings
  ├── LICENSE
  ├── pyproject.toml   # Python project configuration
- ├── README.md        # This documentation
+ └── README.md        # This documentation
 ```
 
 ---
@@ -62,23 +62,22 @@ pip install -e .
 
 ---
 
-### 3. Start local services (Langfuse + Qdrant)
+### 3. Start Qdrant (local vector database)
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
-- Langfuse Dashboard: [http://localhost:3000](http://localhost:3000)
 - Qdrant REST API: [http://localhost:6333](http://localhost:6333)
 
-✅ No internet connection required.
+✅ Langfuse is used via [https://cloud.langfuse.com](https://cloud.langfuse.com)
 
 ---
 
 ### 4. Run Embedding API Server (Optional)
 
 ```bash
-python embed/embeddedapi.py
+python embed/embedded_api.py
 ```
 
 Available at:
@@ -94,7 +93,7 @@ Takes raw text and returns vector embeddings.
 ### 5. Run Chatbot Server
 
 ```bash
-python chatbot/chatapi.py
+python chatbot/chat_api.py
 ```
 
 FastAPI server available at:
@@ -104,7 +103,7 @@ FastAPI server available at:
 
 ---
 
-## 🛠 Configuration
+## 🛠️ Configuration
 
 The system loads configuration in two ways:
 1. From **environment variables** (highest priority)
@@ -127,11 +126,11 @@ Example `configs.json`:
     "prefer_grpc": true,
     "https": false
   },
-  "embedding_model": "http://127.0.0.1:8080/embed/",
+  "embedding_model": "http://localhost:8080/embed/",
   "langfuse_keys": {
-    "secret_key": "your-local-secret",
-    "public_key": "your-local-public",
-    "host": "http://localhost:3000"
+    "secret_key": "your-langfuse-secret-key",
+    "public_key": "your-langfuse-public-key",
+    "host": "https://cloud.langfuse.com"
   },
   "claude_config": {
     "claude_model": "claude-3-opus",
@@ -140,7 +139,7 @@ Example `configs.json`:
 }
 ```
 
-✅ Easy switching between development, staging, and production environments!
+✅ Easy switching between development, staging, and production!
 
 ---
 
@@ -148,23 +147,23 @@ Example `configs.json`:
 
 | Task | Command |
 |:-----|:--------|
-| Start Langfuse + Qdrant services | `docker compose up -d` |
+| Start Qdrant service | `docker compose up -d` |
 | Stop all running services | `docker compose down` |
 | Build Python project | `python -m build` |
 | Install project locally | `pip install -e .` |
-| Run Embedding server | `python embed/embeddedapi.py` |
-| Run Chatbot FastAPI server | `python chatbot/chatapi.py` |
+| Run Embedding server | `python embed/embedded_api.py` |
+| Run Chatbot FastAPI server | `python chatbot/chat_api.py` |
 
 ---
 
-## 🧠 Features
+## 🧐 Features
 
 - 🚀 FastAPI-based API server for chatbot interaction
 - 🔎 Elasticsearch for structured log search
-- 🧠 Sentence Transformers for text/vector embeddings
-- 🔥 Langfuse prompt observability dashboard
+- 🧐 Sentence Transformers for text/vector embeddings
+- 🔥 Langfuse Cloud for prompt observability
 - 🗂️ Qdrant Vector DB for fast document retrieval
-- 🖥️ Fully local deployment using Docker Compose
+- 🖥️ Minimal local services using Docker Compose
 - ⚡ Easy plug-and-play configuration (configs.json + ENV)
 
 ---
@@ -175,7 +174,8 @@ Example `configs.json`:
 - For production, you should enable:
   - SSL/HTTPS for APIs
   - Authentication (OAuth2, API keys)
-  - Secure the Postgres database
+  - Secure Elasticsearch/Qdrant
+  - Protect your Langfuse API keys
 
 ---
 
@@ -196,4 +196,5 @@ See the [LICENSE](LICENSE) file for full details.
 
 ---
 
-# 🚀 Happy Hacking & AI Investigations!
+# 🚀 Happy Hacking & AI Log Adventures!
+
