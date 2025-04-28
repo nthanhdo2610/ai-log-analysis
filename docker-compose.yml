@@ -1,54 +1,4 @@
 services:
-  langfuse-db:
-    image: postgres
-    restart: always
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: langfuse
-    ports:
-      - "5432:5432"
-    volumes:
-      - langfuse_db_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  clickhouse:
-    image: clickhouse/clickhouse-server
-    restart: always
-    ports:
-      - "8123:8123"
-      - "9000:9000"
-    volumes:
-      - clickhouse_data:/var/lib/clickhouse
-    healthcheck:
-      test: ["CMD", "clickhouse-client", "--query", "SELECT 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  langfuse:
-    image: ghcr.io/langfuse/langfuse:latest
-    restart: always
-    environment:
-      DATABASE_URL: postgres://postgres:postgres@langfuse-db:5432/langfuse
-      CLICKHOUSE_URL: http://clickhouse:8123
-      CLICKHOUSE_MIGRATION_URL: http://clickhouse:8123
-      NEXTAUTH_SECRET: secret123
-      NEXTAUTH_URL: http://localhost:3000
-      SALT: salthere
-      TELEMETRY_ENABLED: false
-    ports:
-      - "3000:3000"
-    depends_on:
-      langfuse-db:
-        condition: service_healthy
-      clickhouse:
-        condition: service_healthy  # Changed to service_healthy
-
   qdrant:
     image: qdrant/qdrant
     restart: always
@@ -57,5 +7,4 @@ services:
       - "6334:6334"
 
 volumes:
-  langfuse_db_data: {}
-  clickhouse_data: {}
+  qdrant_storage: {}

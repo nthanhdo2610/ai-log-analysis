@@ -11,7 +11,7 @@ DEFAULT_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 VALID_TASKS = ("feature-extraction",)
 
 
-class LocalEmbeddings(BaseModel, Embeddings):
+class ModelEmbeddings(BaseModel, Embeddings):
     
 
     client: Any  #: :meta private:

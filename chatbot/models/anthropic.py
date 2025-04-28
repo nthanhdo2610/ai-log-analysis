@@ -20,7 +20,7 @@ from typing import (
     cast,
 )
 
-import anthropic
+import anthropic as anthropic
 from langchain_core._api import beta, deprecated
 from langchain_core.callbacks import (
     AsyncCallbackManagerForLLMRun,

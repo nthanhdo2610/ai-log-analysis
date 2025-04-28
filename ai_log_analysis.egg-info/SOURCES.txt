@@ -7,13 +7,9 @@ ai_log_analysis.egg-info/dependency_links.txt
 ai_log_analysis.egg-info/requires.txt
 ai_log_analysis.egg-info/top_level.txt
 chatbot/__init__.py
-chatbot/anthropic.py
 chatbot/chat_api.py
 chatbot/chatbot.py
 chatbot/configuration.py
-chatbot/embeddings.py
-chatbot/langfuse.py
-chatbot/qdrant.py
 embed/__init__.py
 embed/embedded_api.py
 utils/__init__.py

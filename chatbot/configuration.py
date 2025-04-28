@@ -3,9 +3,9 @@ import uuid
 from elasticsearch import Elasticsearch
 from qdrant_client import QdrantClient
 from qdrant_client.http.models import PointStruct, Distance, VectorParams
-from langfuse import LangfusePromptManager
-from embeddings import LocalEmbeddings
-from anthropic import ChatAnthropic
+from models.langfuse import LangfusePromptManager
+from models.embeddings import ModelEmbeddings
+from models.anthropic import ChatAnthropic
 from langchain_core.documents import Document
 
 from elasticsearch import Elasticsearch, ConnectionError
@@ -75,7 +75,7 @@ class ELKLogRetriever:
 
 class LogEmbeddingProcessor:
     def __init__(self, embedding_model: str):
-        self.embedder = LocalEmbeddings(model=embedding_model)
+        self.embedder = ModelEmbeddings(model=embedding_model)
 
     def embed_logs(self, logs):
         documents = [Document(page_content=log["message"]) for log in logs]
@@ -88,6 +88,11 @@ class QDrantLogStore:
     
     def __init__(self, host: str, port: int, collection_name: str, api_key: str, prefer_grpc: bool, https:bool=False, vector_size: int = 768):
         self.client = QdrantClient(host=host, port=port,api_key=api_key, https=https, prefer_grpc=prefer_grpc)
+        self.collection_name = collection_name
+        self._ensure_collection_exists(vector_size)
+    
+    def __init__(self, host: str, port: int, collection_name: str, prefer_grpc: bool, https:bool=False, vector_size: int = 768):
+        self.client = QdrantClient(host=host, port=port, https=https, prefer_grpc=prefer_grpc)
         self.collection_name = collection_name
         self._ensure_collection_exists(vector_size)
 
