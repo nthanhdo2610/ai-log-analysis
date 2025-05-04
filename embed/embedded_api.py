@@ -17,7 +17,7 @@ async def lifespan(app: FastAPI):
 
 # Initialize FastAPI app
 app = FastAPI(title="Embedded Log Analysis", version="1.0", lifespan=lifespan)
-model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
+model = SentenceTransformer("sentence-transformers/all-mpnet-base-v2")
 
 @app.post("/embed")
 async def embed(request: Request):

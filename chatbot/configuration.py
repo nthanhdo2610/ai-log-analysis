@@ -122,15 +122,16 @@ class ELKLogRetriever:
             return []
 
 class LogEmbeddingProcessor:
-    def __init__(self, embedding_model: str):
+    def __init__(self, embedding_model: str):  # embedding_model = API URL
         self.embedder = ModelEmbeddings(model=embedding_model)
 
     def embed_logs(self, logs):
-        documents = [Document(page_content=log["message"]) for log in logs]
+        documents = [Document(page_content=log.get("message", "")) for log in logs]
         return self.embedder.embed_documents(documents)
 
     def embed_query(self, query: str):
         return self.embedder.embed_query(query)
+
 
 class QDrantLogStore:
     
