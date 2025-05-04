@@ -12,7 +12,7 @@
         "prefer_grpc": true,
         "https": false
     },
-    "embedding_model": "http://127.0.0.1:8080/embed/",
+    "embedding_model": "http://127.0.0.1:8080/embed",
     "langfuse_keys": {
         "secret_key": "your-local-secret",
         "public_key": "your-local-public",
