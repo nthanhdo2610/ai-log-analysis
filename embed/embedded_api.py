@@ -1,5 +1,6 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request
+import json
+from fastapi import FastAPI, HTTPException, Request
 from sentence_transformers import SentenceTransformer
 
 # Register event handlers
@@ -20,11 +21,24 @@ model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
 
 @app.post("/embed")
 async def embed(request: Request):
-    data = await request.json()
-    texts = data["texts"]
+    try:
+        data = await request.json()
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid JSON body: {e}")
+                            
+    print("📥 [DEBUG] Incoming /embed request body (JSON):")
+    print(json.dumps(data, indent=2))  # Pretty-printed JSON)
+
+    # Accept both "texts" and "inputs"
+    texts = data.get("texts") or data.get("inputs")
+    if not texts:
+        raise HTTPException(status_code=400, detail="Missing 'texts' or 'inputs' in request body")
+
+    if not isinstance(texts, list) or not all(isinstance(t, str) for t in texts):
+        raise HTTPException(status_code=422, detail="'texts' or 'inputs' must be a list of strings.")
+
     vectors = model.encode(texts, convert_to_numpy=True).tolist()
     return {"vectors": vectors}
-
 
 @app.get("/")
 def root():

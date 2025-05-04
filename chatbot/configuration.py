@@ -1,3 +1,4 @@
+import base64
 import json
 import uuid
 from elasticsearch import Elasticsearch
@@ -10,68 +11,115 @@ from langchain_core.documents import Document
 
 from elasticsearch import Elasticsearch, ConnectionError
 
+import json
+from elasticsearch import Elasticsearch
+
 class ELKLogRetriever:
     def __init__(self, es_host: str, es_user: str, es_pass: str, index: str):
         try:
+            print(f"🔧 [DEBUG] Connecting to ES @ {es_host}")
+            print(f"🔧 [DEBUG] Using index/data stream: '{index}'")
+            self.es_user = es_user
+            self.es_pass = es_pass
             self.es = Elasticsearch(
                 es_host,
                 basic_auth=(es_user, es_pass),
                 verify_certs=False
             )
-            self.index = index
-            self.mapping = json.dumps(self.get_mapping(), indent=2)  # Fetch mapping dynamically
+            self.index = index.strip()
+            self.mapping = json.dumps(self.get_mapping(), indent=2)
+            print("📌 [DEBUG] Loaded mapping from ES:")
+            print(self.mapping)
         except Exception as e:
             print(f"❌ Unable to connect to Elasticsearch at {es_host}: {e}")
             self.es = None
 
     def get_mapping(self):
-        """Retrieve index mapping for a data stream by checking its backing indices."""
+        """Resolve the latest backing index for a data stream, then fetch its mapping with manual headers."""
         if not self.es:
             return {}
 
-        try:
-            # Get backing indices for the data stream
-            data_stream_info = self.es.indices.get_data_stream(name=self.index)
+        # Manually build Basic Auth header
+        encoded = base64.b64encode(f"{self.es_user}:{self.es_pass}".encode()).decode()
+        auth_header = f"Basic {encoded}"
 
-            backing_indices = data_stream_info.get("data_streams", [])[0].get("indices", [])
-            if not backing_indices:
-                print(f"⚠️ No backing indices found for data stream: {self.index}")
+        try:
+            # Step 1: Resolve latest backing index from data stream
+            ds_response = self.es.transport.perform_request(
+                method="GET",
+                target=f"/_data_stream/{self.index}",
+                headers={
+                    "Accept": "application/json",
+                    "Authorization": auth_header
+                }
+            ).body
+
+            data_streams = ds_response.get("data_streams", [])
+            if not data_streams:
+                print(f"⚠️ Data stream '{self.index}' not found or empty.")
                 return {}
 
-            # Get the latest backing index
-            latest_index = backing_indices[-1]["index_name"]
+            backing_indices = data_streams[0].get("indices", [])
+            if not backing_indices:
+                print(f"⚠️ No backing indices for data stream: {self.index}")
+                return {}
 
-            # Fetch mapping from the latest backing index
-            mapping = self.es.indices.get_mapping(index=latest_index)
-            return mapping.get(latest_index, {}).get("mappings", {})
+            # Get latest by sorting
+            latest_index = sorted(backing_indices, key=lambda x: x["index_name"])[-1]["index_name"]
+            print(f"📌 [DEBUG] Resolved backing index: {latest_index}")
+
+            # Step 2: Fetch mapping from that backing index
+            mapping_response = self.es.transport.perform_request(
+                method="GET",
+                target=f"/{latest_index}/_mapping",
+                headers={
+                    "Accept": "application/json",
+                    "Content-Type": "application/json",
+                    "Authorization": auth_header
+                }
+            ).body
+
+            return mapping_response.get(latest_index, {}).get("mappings", {})
 
         except Exception as e:
-            print(f"❌ Error fetching index mapping for data stream {self.index}: {e}")
+            print(f"❌ Error resolving mapping for '{self.index}': {e}")
             return {}
 
-    def search_logs(self, query: str):
-        es_query = json.dumps(query, indent=2)
-        print(f"🔎 Elasticsearch querying: {es_query}")
-        """Search logs in a data stream with a flexible query."""
+    def search_logs(self, query_body: dict):
+        """Search logs using raw transport with manual authentication and full debug tracing."""
         if not self.es:
+            print("❌ Elasticsearch client not initialized.")
             return []
-        # Ensure headers are set correctly
-        headers = {
-            "Content-Type": "application/json"
-        }
+
         try:
-            response = self.es.search(index=self.index, body={
-                "query": {
-                    "match": {"message": es_query}
+            # Build Basic Auth header manually
+            encoded = base64.b64encode(f"{self.es_user}:{self.es_pass}".encode()).decode()
+            auth_header = f"Basic {encoded}"
+
+            print("🔍 [TRACE] Sending Elasticsearch Query:")
+            print(json.dumps(query_body, indent=2))
+
+            response = self.es.transport.perform_request(
+                method="POST",
+                target=f"/{self.index}/_search",
+                headers={
+                    "Accept": "application/json",
+                    "Content-Type": "application/json",
+                    "Authorization": auth_header  # ✅ required
                 },
-                "size": 100  # Fetch up to 100 logs
-            })
+                body=query_body
+            ).body
+
+            print("✅ [TRACE] Elasticsearch Response (truncated to 1000 chars):")
+            raw_json = json.dumps(response, indent=2)
+            print(raw_json[:1000] + ("..." if len(raw_json) > 1000 else ""))
+
             return [hit["_source"] for hit in response.get("hits", {}).get("hits", [])]
+
         except Exception as e:
-            print(f"❌ Error querying Elasticsearch - error: {e}")
+            print("❌ [ERROR] Elasticsearch query failed.")
+            print(f"❌ Exception: {e}")
             return []
-
-
 
 class LogEmbeddingProcessor:
     def __init__(self, embedding_model: str):

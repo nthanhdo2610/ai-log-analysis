@@ -28,15 +28,27 @@ class ELKChatbot:
         return self.user_context.get(key, None)
 
     def extract_json_from_response(self, response_text):
-        """Extracts a valid JSON object from a response that may contain additional text."""
-        match = re.search(r'```json\n(.*?)\n```', response_text, re.DOTALL)
-        json_text = match.group(1) if match else response_text
+        """Extract a valid JSON object from Claude's response (robust against bad formatting)."""
+        # First try to extract from ```json fenced block
+        match = re.search(r'```json\s*(\{.*?\})\s*```', response_text, re.DOTALL)
+        if match:
+            json_text = match.group(1)
+        else:
+            # Try to extract from any generic code block
+            match = re.search(r'```\s*(\{.*?\})\s*```', response_text, re.DOTALL)
+            if match:
+                json_text = match.group(1)
+            else:
+                # Fallback: extract first { ... } block in text
+                match = re.search(r'(\{.*\})', response_text, re.DOTALL)
+                json_text = match.group(1) if match else ""
 
         try:
-            parsed_json = json.loads(json_text)
-            return parsed_json
+            return json.loads(json_text)
         except json.JSONDecodeError:
+            print("❌ Claude response (raw):", response_text)
             raise ValueError("Failed to extract a valid JSON query from Claude's response.")
+
 
     def process_query(self, query):
         try:
