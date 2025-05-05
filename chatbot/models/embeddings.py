@@ -14,7 +14,7 @@ class ModelEmbeddings:
 
     def _post_embedding(self, texts: list[str]) -> list[list[float]]:
         try:
-            response = requests.post(self.api_url, json={"texts": texts}, timeout=10)
+            response = requests.post(self.api_url, json={"texts": texts}, timeout=30)
             response.raise_for_status()
             return response.json()["vectors"]
         except requests.RequestException as e:

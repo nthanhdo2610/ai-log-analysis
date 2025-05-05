@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Header
 from fastapi.concurrency import asynccontextmanager
 from pydantic import BaseModel
 from chatbot import ELKChatbot
@@ -6,6 +6,7 @@ from utils.config_manager import ConfigManager
 
 # Initialize FastAPI app
 app = FastAPI(title="ELK Log Analysis Chatbot API", version="1.0")
+API_KEY = "Nx4bNayVyyXL6VR1YTkmaXTXKe75yilUxraXvSMq9l1unDIZoDnrFWYFte30PgNB"
 
 # Configuration
 config = ConfigManager("configs.json")
@@ -30,10 +31,13 @@ class QueryRequest(BaseModel):
 
 
 @app.post("/chat")
-def analyze_logs(request: QueryRequest):
+def analyze_logs(request: QueryRequest, x_api_key: str = Header(...)):
     """
     Endpoint to query the chatbot for log analysis.
     """
+    if x_api_key != API_KEY:
+        raise HTTPException(status_code=403, detail="Forbidden")
+
     try:
         response = chatbot.process_query(request.question)
         return {"query": request.question, "response": response}
@@ -41,7 +45,7 @@ def analyze_logs(request: QueryRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/")
+@app.get("/about")
 def root():
     return {"message": "ELK Log Analysis Chatbot API is running!"}
 
