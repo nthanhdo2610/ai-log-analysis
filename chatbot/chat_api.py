@@ -3,9 +3,18 @@ from fastapi.concurrency import asynccontextmanager
 from pydantic import BaseModel
 from chatbot import ELKChatbot
 from utils.config_manager import ConfigManager
+from fastapi.middleware.cors import CORSMiddleware
 
 # Initialize FastAPI app
 app = FastAPI(title="ELK Log Analysis Chatbot API", version="1.0")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 API_KEY = "Nx4bNayVyyXL6VR1YTkmaXTXKe75yilUxraXvSMq9l1unDIZoDnrFWYFte30PgNB"
 
 # Configuration
