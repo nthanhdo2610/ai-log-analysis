@@ -35,55 +35,61 @@ class ELKLogRetriever:
             self.es = None
 
     def get_mapping(self):
-        """Resolve the latest backing index for a data stream, then fetch its mapping with manual headers."""
+        """Fetch mapping for a regular index or the latest backing index of a data stream."""
         if not self.es:
             return {}
 
-        # Manually build Basic Auth header
+        # Prepare Basic Auth header
         encoded = base64.b64encode(f"{self.es_user}:{self.es_pass}".encode()).decode()
         auth_header = f"Basic {encoded}"
+        headers = {
+            "Accept": "application/json",
+            "Authorization": auth_header
+        }
 
         try:
-            # Step 1: Resolve latest backing index from data stream
+            # Step 1: Check if it's a data stream
             ds_response = self.es.transport.perform_request(
                 method="GET",
                 target=f"/_data_stream/{self.index}",
-                headers={
-                    "Accept": "application/json",
-                    "Authorization": auth_header
-                }
+                headers=headers
             ).body
 
             data_streams = ds_response.get("data_streams", [])
-            if not data_streams:
-                print(f"⚠️ Data stream '{self.index}' not found or empty.")
-                return {}
+            if data_streams:
+                backing_indices = data_streams[0].get("indices", [])
+                if backing_indices:
+                    # Get latest backing index
+                    latest_index = sorted(backing_indices, key=lambda x: x["index_name"])[-1]["index_name"]
+                    print(f"📌 [DEBUG] Resolved backing index for data stream: {latest_index}")
 
-            backing_indices = data_streams[0].get("indices", [])
-            if not backing_indices:
-                print(f"⚠️ No backing indices for data stream: {self.index}")
-                return {}
-
-            # Get latest by sorting
-            latest_index = sorted(backing_indices, key=lambda x: x["index_name"])[-1]["index_name"]
-            print(f"📌 [DEBUG] Resolved backing index: {latest_index}")
-
-            # Step 2: Fetch mapping from that backing index
-            mapping_response = self.es.transport.perform_request(
-                method="GET",
-                target=f"/{latest_index}/_mapping",
-                headers={
-                    "Accept": "application/json",
-                    "Content-Type": "application/json",
-                    "Authorization": auth_header
-                }
-            ).body
-
-            return mapping_response.get(latest_index, {}).get("mappings", {})
+                    # Fetch mapping for backing index
+                    mapping_response = self.es.transport.perform_request(
+                        method="GET",
+                        target=f"/{latest_index}/_mapping",
+                        headers=headers
+                    ).body
+                    return mapping_response.get(latest_index, {}).get("mappings", {})
+                else:
+                    print(f"⚠️ No backing indices for data stream: {self.index}")
+                    return {}
+            else:
+                raise Exception("Not a data stream")
 
         except Exception as e:
-            print(f"❌ Error resolving mapping for '{self.index}': {e}")
-            return {}
+            # Fallback: assume it's a normal index
+            print(f"ℹ️ Fallback to regular index mapping for '{self.index}': {e}")
+            try:
+                mapping_response = self.es.transport.perform_request(
+                    method="GET",
+                    target=f"/{self.index}/_mapping",
+                    headers=headers
+                ).body
+                return mapping_response.get(self.index, {}).get("mappings", {})
+            except Exception as e2:
+                print(f"❌ Failed to fetch mapping for '{self.index}': {e2}")
+                return {}
+
 
     def search_logs(self, query_body: dict):
         """Search logs using raw transport with manual authentication and full debug tracing."""
